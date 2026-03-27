@@ -12,7 +12,7 @@ const progressText = document.getElementById('progress-text');
 const floatingScarcity = document.getElementById('floating-scarcity');
 
 // ===== LINK DO TELEGRAM (ALTERE AQUI) =====
-const TELEGRAM_LINK = 'https://t.me/+rY89vbUjiWUxNTBh';
+const TELEGRAM_LINK = 'https://t.me/frellabet_bot';
 
 // ===== VIEWERS COUNTER (fake social proof) =====
 function updateViewers() {
