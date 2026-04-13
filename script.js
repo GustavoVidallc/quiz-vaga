@@ -1,6 +1,5 @@
 /* ============================
    QUIZ VAGA — Main Script
-   Aggressive Marketing Quiz Engine
    ============================ */
 
 // ===== STATE =====
@@ -11,10 +10,10 @@ const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 const floatingScarcity = document.getElementById('floating-scarcity');
 
-// ===== LINK DO TELEGRAM (ALTERE AQUI) =====
-const TELEGRAM_LINK = 'https://t.me/frellabet_bot';
+// ===== LINK DO WHATSAPP (ALTERE AQUI) =====
+const WHATSAPP_LINK = 'https://chat.whatsapp.com/CodXC6Ve9tMLNejBEX0tUm';
 
-// ===== VIEWERS COUNTER (fake social proof) =====
+// ===== VIEWERS COUNTER =====
 function updateViewers() {
     const el = document.getElementById('viewers-count');
     const base = 280 + Math.floor(Math.random() * 120);
@@ -26,7 +25,7 @@ function updateViewers() {
     }, 3000 + Math.random() * 2000);
 }
 
-// ===== VAGAS COUNTER (decreasing scarcity) =====
+// ===== VAGAS COUNTER =====
 let vagasBase = 14;
 function decrementVagas() {
     const el = document.getElementById('vagas-count');
@@ -39,7 +38,7 @@ function decrementVagas() {
 }
 
 // ===== PROGRESS UPDATE =====
-const totalSteps = 13; // 9 questions + info screens + loading + result
+const totalSteps = 16;
 
 function updateProgress() {
     const pct = Math.min(Math.round((currentStep / totalSteps) * 100), 100);
@@ -60,13 +59,38 @@ function goToStep(step) {
     steps[step].render(div);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Show floating scarcity after step 3
-    if (step >= 3) {
+    if (step >= 5) {
         floatingScarcity.classList.add('visible');
     }
 }
 
 function nextStep() { goToStep(currentStep + 1); }
+
+// ===== NOME SUBMIT =====
+function submitNome() {
+    const input = document.getElementById('input-nome');
+    const val = input.value.trim();
+    if (val.length >= 2) {
+        userData.nome = val;
+        nextStep();
+    }
+}
+
+// ===== IDADE SUBMIT =====
+function submitIdade() {
+    const input = document.getElementById('input-idade');
+    const val = parseInt(input.value);
+    if (val >= 1 && val <= 99) {
+        userData.idade = val;
+        if (val < 18) {
+            // Menor de idade → vai pro aviso (step 3)
+            goToStep(3);
+        } else {
+            // Maior de idade → pula o aviso e vai pro step 4
+            goToStep(4);
+        }
+    }
+}
 
 // ===== OPTION CLICK HANDLER =====
 function handleOptionClick(el, key, value, isNegative) {
@@ -144,11 +168,92 @@ const steps = [
         render(el) {
             renderInfoScreen(el, {
                 icon: '💰',
-                title: 'Você foi selecionado para uma oportunidade EXCLUSIVA',
-                text: `Antes de continuar, <strong>responda 9 perguntas rápidas</strong> para verificarmos se você se qualifica.<br><br>
-                ⚠️ <strong>Atenção:</strong> Essa vaga é limitada. Se você sair dessa página, <strong>perderá seu lugar na fila</strong>.`,
-                btnText: 'QUERO PARTICIPAR'
+                title: 'Calma aí — isso aqui não é pra todo mundo.',
+                text: `Responde <strong>9 perguntas rápidas</strong> pra gente ver se você se encaixa no perfil.<br><br>
+                ⚠️ <strong>Aviso:</strong> Se fechar essa página, perde a vez. Tem muita gente na fila e a gente <strong>não guarda vaga</strong>.`,
+                btnText: 'QUERO FAZER O TESTE'
             });
+        }
+    },
+
+    // ===== STEP 1: NOME =====
+    {
+        render(el) {
+            el.innerHTML = `
+                <div class="question-card">
+                    <div class="step-number">
+                        <span class="step-icon">👤</span>
+                        IDENTIFICAÇÃO
+                    </div>
+                    <h2 class="question-text">Primeiro, como posso te chamar?</h2>
+                    <p class="question-subtext">Coloca seu nome ou apelido aí embaixo.</p>
+                    <div class="input-group">
+                        <input type="text" id="input-nome" class="quiz-input" style="width:100%;display:block;padding:18px 22px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.15);border-radius:14px;color:#fff;font-family:Inter,sans-serif;font-size:18px;font-weight:600;outline:none;box-sizing:border-box;-webkit-appearance:none" placeholder="Ex: João, Maria, Dudu..." autocomplete="off" />
+                    </div>
+                    <button class="btn-continue" id="btn-nome" disabled onclick="submitNome()">
+                        CONTINUAR →
+                    </button>
+                </div>
+            `;
+            const input = document.getElementById('input-nome');
+            const btn = document.getElementById('btn-nome');
+            input.addEventListener('input', () => {
+                btn.disabled = input.value.trim().length < 2;
+            });
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && input.value.trim().length >= 2) submitNome();
+            });
+            input.focus();
+        }
+    },
+
+    // ===== STEP 2: IDADE =====
+    {
+        render(el) {
+            const nome = userData.nome || 'você';
+            el.innerHTML = `
+                <div class="question-card">
+                    <div class="step-number">
+                        <span class="step-icon">📅</span>
+                        IDENTIFICAÇÃO
+                    </div>
+                    <h2 class="question-text">Beleza, ${nome}! Qual sua idade?</h2>
+                    <p class="question-subtext">Precisamos confirmar sua idade pra continuar.</p>
+                    <div class="input-group">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="input-idade" class="quiz-input" style="width:100%;display:block;padding:18px 22px;background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.15);border-radius:14px;color:#fff;font-family:Inter,sans-serif;font-size:18px;font-weight:600;outline:none;box-sizing:border-box;-webkit-appearance:none" placeholder="Digite sua idade" maxlength="2" autocomplete="off" />
+                    </div>
+                    <button class="btn-continue" id="btn-idade" disabled onclick="submitIdade()">
+                        CONTINUAR →
+                    </button>
+                </div>
+            `;
+            const input = document.getElementById('input-idade');
+            const btn = document.getElementById('btn-idade');
+            input.addEventListener('input', () => {
+                const val = parseInt(input.value);
+                btn.disabled = !(val >= 1 && val <= 99);
+            });
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !btn.disabled) submitIdade();
+            });
+            input.focus();
+        }
+    },
+
+    // ===== STEP 3: AVISO MENOR DE IDADE (condicional — pulado se >= 18) =====
+    {
+        render(el) {
+            el.innerHTML = `
+                <div class="info-screen underage-screen">
+                    <div class="info-icon">🔞</div>
+                    <h2 class="info-title">Poxa, ainda não dá.</h2>
+                    <p class="info-text">
+                        Essa oportunidade é <strong>apenas para maiores de 18 anos</strong>.<br><br>
+                        As casas de aposta são regulamentadas e exigem maioridade pra qualquer operação.<br><br>
+                        Quando você fizer 18, volta aqui que a gente te encaixa. 💪
+                    </p>
+                </div>
+            `;
         }
     },
 
@@ -157,18 +262,18 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 1, totalQ: 9, stepIcon: '🔥',
-                questionText: 'Quer ganhar de R$5 a R$100 HOJE usando apenas seu celular?',
-                subText: `Não é emprego fixo. É um <strong>modelo novo no mercado digital</strong>, 100% online, por indicação e performance. Basta fazer um cadastro simples.`,
+                questionText: 'Quer botar de R$5 a R$100 no bolso HOJE usando só o celular?',
+                subText: `Esquece carteira assinada. Isso aqui é diferente — é por indicação e performance, 100% pelo celular. Sem chefe, sem horário, sem frescura.`,
                 callout: {
                     icon: '💸',
-                    text: '<strong>547 pessoas</strong> já faturaram hoje com esse modelo. A cada minuto que você espera, alguém está pegando a sua vaga.'
+                    text: '<strong>547 pessoas</strong> já sacaram hoje. Enquanto você tá lendo isso, tem gente garantindo a vaga que podia ser sua.'
                 },
                 key: 'q1',
                 options: [
-                    { label: 'Quero ganhar dinheiro HOJE ✅', value: 'sim', emoji: '🤑' },
-                    { label: 'Não quero ganhar dinheiro...', value: 'nao', negative: true, emoji: '❌' }
+                    { label: 'Quero essa grana, bora! 💰', value: 'sim', emoji: '🤑' },
+                    { label: 'Não, tô de boa sem dinheiro...', value: 'nao', negative: true, emoji: '❌' }
                 ],
-                socialProof: '<strong>92%</strong> das pessoas escolheram a primeira opção'
+                socialProof: '<strong>92%</strong> não perderam tempo — clicaram na primeira'
             });
         }
     },
@@ -178,11 +283,11 @@ const steps = [
         render(el) {
             renderInfoScreen(el, {
                 icon: '🚀',
-                title: 'EXCELENTE ESCOLHA!',
-                text: `Você acabou de dar o primeiro passo que <strong>separa os que reclamam</strong> dos que <strong>faturam</strong>.<br><br>
-                Enquanto você está aqui, <strong>milhares de pessoas</strong> já estão lucrando com o celular.<br><br>
-                🔥 A pergunta é: <strong>VOCÊ vai ficar de fora?</strong>`,
-                btnText: 'CONTINUAR QUALIFICAÇÃO'
+                title: 'Boa. Você já tá na frente de muita gente.',
+                text: `A maioria das pessoas pega o celular, rola o feed, reclama da vida e dorme sem fazer nada.<br><br>
+                Você pelo menos teve a coragem de clicar. Isso já te coloca <strong>no grupo dos 10%</strong> que realmente fazem dinheiro.<br><br>
+                🔥 Agora é só <strong>não parar no meio do caminho</strong>.`,
+                btnText: 'CONTINUAR'
             });
         }
     },
@@ -192,18 +297,18 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 2, totalQ: 9, stepIcon: '⚡',
-                questionText: 'Você se incomoda com Jogos, Bets e Casas de Aposta?',
-                subText: `<strong>ATENÇÃO:</strong> Se você se incomoda com esse mercado, essa oportunidade <strong>NÃO é para você</strong>. Mas se não se importa de faturar R$50, R$100, R$500 por dia...`,
+                questionText: 'Você tem algum problema com Bets, Jogos ou Casas de Aposta?',
+                subText: `Vou ser direto: se você torce o nariz pra esse mercado, fecha a página agora. Mas se você <strong>não tem problema</strong> em faturar R$50, R$100, R$500 por dia com isso...`,
                 callout: {
                     icon: '📊',
-                    text: 'O mercado de apostas movimenta <strong>R$ 150 BILHÕES por ano</strong> no Brasil. Pessoas comuns estão faturando com isso <strong>TODOS OS DIAS</strong>.'
+                    text: 'Esse mercado movimenta <strong>R$ 150 BILHÕES por ano</strong> só no Brasil. Gente comum tá tirando dinheiro disso <strong>todo santo dia</strong>. A pergunta é: por que você ainda não?'
                 },
                 key: 'q2',
                 options: [
-                    { label: 'Não me importo, QUERO GANHAR DINHEIRO 💰', value: 'sim', emoji: '✅' },
-                    { label: 'Prefiro continuar sem dinheiro...', value: 'nao', negative: true, emoji: '❌' }
+                    { label: 'Sem problema nenhum — quero faturar 💰', value: 'sim', emoji: '✅' },
+                    { label: 'Tenho problema, prefiro ficar sem...', value: 'nao', negative: true, emoji: '❌' }
                 ],
-                socialProof: '<strong>89%</strong> querem aproveitar essa oportunidade'
+                socialProof: '<strong>89%</strong> responderam que querem essa oportunidade'
             });
         }
     },
@@ -213,16 +318,16 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 3, totalQ: 9, stepIcon: '💎',
-                questionText: 'Está disposto a começar AGORA e faturar entre R$10 e R$100+ por dia?',
-                subText: `Você vai fazer o cadastro em uma <strong>casa de apostas legalizada</strong>. Sua comissão por fazer o cadastro será de <strong>R$50,00</strong>. Indicando outras pessoas você pode faturar <strong>mais de R$100,00/dia</strong>.`,
+                questionText: 'Tá disposto a começar AGORA e botar de R$10 a R$100+ no bolso por dia?',
+                subText: `O lance é simples: você faz um cadastro numa <strong>casa de aposta legalizada</strong>, ganha <strong>R$50 de comissão</strong>. Indica mais gente? Ganha mais. Tem afiliado tirando <strong>R$100, R$200 por dia</strong> só com o celular.`,
                 callout: {
                     icon: '⏰',
-                    text: 'Quem começou <strong>ontem</strong> já está faturando. Cada hora que você espera é dinheiro que você <strong>PERDE</strong>.'
+                    text: 'Quem fez isso <strong>ontem</strong> já tá com dinheiro na conta. Cada hora que você demora é grana que <strong>fica na mesa</strong>.'
                 },
                 key: 'q3',
                 options: [
-                    { label: 'SIM, quero iniciar AGORA! 🚀', value: 'sim', emoji: '✅' },
-                    { label: 'Vou deixar passar essa oportunidade...', value: 'nao', negative: true, emoji: '😔' }
+                    { label: 'Quero começar AGORA! 🚀', value: 'sim', emoji: '✅' },
+                    { label: 'Vou deixar pra depois...', value: 'nao', negative: true, emoji: '😔' }
                 ]
             });
         }
@@ -233,31 +338,31 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 4, totalQ: 9, stepIcon: '😤',
-                questionText: 'Qual a maior dificuldade que você enfrenta HOJE?',
-                subText: `Seja honesto. <strong>Essa resposta vai definir o seu plano de ação personalizado</strong> para começar a faturar imediatamente.`,
+                questionText: 'Qual desses perrengues é o SEU agora?',
+                subText: `Pode ser sincero. Dependendo da sua resposta, <strong>a gente te encaixa no plano certo</strong> pra você sair do vermelho o mais rápido possível.`,
                 key: 'q4',
                 options: [
-                    { label: 'Estou DESEMPREGADO(A) e precisando urgente', value: 'desempregado', emoji: '😰' },
-                    { label: 'Minhas contas estão ATRASADAS', value: 'contas_atrasadas', emoji: '💳' },
-                    { label: 'Preciso de uma RENDA EXTRA agora', value: 'renda_extra', emoji: '💵' },
-                    { label: 'TODAS as opções acima — situação crítica!', value: 'todas', emoji: '🆘' }
+                    { label: 'Tô DESEMPREGADO(A) — coisa tá feia', value: 'desempregado', emoji: '😰' },
+                    { label: 'Contas ATRASADAS, nome sujo', value: 'contas_atrasadas', emoji: '💳' },
+                    { label: 'Preciso de uma grana EXTRA urgente', value: 'renda_extra', emoji: '💵' },
+                    { label: 'TUDO ISSO junto — tô no limite', value: 'todas', emoji: '🆘' }
                 ],
-                socialProof: '<strong>67%</strong> das pessoas que responderam "todas" já estão faturando'
+                socialProof: '<strong>67%</strong> marcaram "tudo junto" e já tão faturando'
             });
         }
     },
 
-    // ===== STEP 6: MARKETING PUSH 2 — AGGRESSION =====
+    // ===== STEP 6: MARKETING PUSH 2 =====
     {
         render(el) {
             renderInfoScreen(el, {
                 icon: '💀',
-                title: 'CHEGA DE SOFRER!',
-                text: `Olha só a real: <strong>ninguém vai bater na sua porta com dinheiro</strong>.<br><br>
-                Enquanto você hesita, outras pessoas <strong>menos qualificadas que você</strong> estão fazendo R$100, R$200, R$500 por dia com o celular.<br><br>
-                A diferença entre quem lucra e quem reclama? <strong>AÇÃO IMEDIATA.</strong><br><br>
-                🔥 <strong>Não tenha dó de si mesmo. Tenha AMBIÇÃO.</strong>`,
-                btnText: 'EU QUERO AGIR AGORA'
+                title: 'Vou te falar a real, sem enrolação.',
+                text: `Ninguém vai bater na sua porta com um envelope de dinheiro. Não vai cair do céu. Não vai aparecer do nada.<br><br>
+                Enquanto você tá aí pensando "será que funciona?", tem gente <strong>menos preparada que você</strong> tirando R$100, R$200 por dia pelo celular. Sabe qual a diferença?<br><br>
+                <strong>Eles pararam de pensar e foram fazer.</strong><br><br>
+                🔥 A oportunidade tá aqui. Mas <strong>ela não te espera</strong>.`,
+                btnText: 'EU VOU FAZER'
             });
         }
     },
@@ -267,17 +372,17 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 5, totalQ: 9, stepIcon: '⏱️',
-                questionText: 'Quando você pretende MUDAR sua situação financeira?',
-                subText: `A janela de oportunidade está <strong>fechando</strong>. As vagas para hoje estão quase esgotadas.`,
+                questionText: 'Quando você vai sair dessa situação?',
+                subText: `Sem julgamento. Mas a resposta pra essa pergunta <strong>diz muito sobre você</strong>.`,
                 callout: {
                     icon: '🔴',
-                    text: '<strong>URGENTE:</strong> 83% das vagas de hoje já foram preenchidas. Quem responde "Agora" tem <strong>prioridade na fila</strong>.'
+                    text: '<strong>83% das vagas de hoje</strong> já foram preenchidas. Quem responde "Agora" entra na <strong>frente da fila</strong>.'
                 },
                 key: 'q5',
                 options: [
-                    { label: 'AGORA — não posso esperar mais! ⚡', value: 'agora', emoji: '🏃' },
-                    { label: 'Em até 30 dias', value: '30dias', emoji: '📅' },
-                    { label: 'Mais pra frente (talvez nunca...)', value: 'depois', negative: true, emoji: '🐢' }
+                    { label: 'AGORA — chega de enrolar ⚡', value: 'agora', emoji: '🏃' },
+                    { label: 'Nos próximos 30 dias', value: '30dias', emoji: '📅' },
+                    { label: 'Sei lá, um dia quem sabe...', value: 'depois', negative: true, emoji: '🐢' }
                 ]
             });
         }
@@ -288,15 +393,15 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 6, totalQ: 9, stepIcon: '💪',
-                questionText: 'Você está DISPOSTO a investir seu tempo para resolver isso?',
-                subText: `Não é sobre trabalhar 8 horas. É sobre dedicar <strong>30 minutos por dia</strong> no celular e ver o dinheiro entrando.`,
+                questionText: 'Você consegue dedicar 30 minutos por dia no celular?',
+                subText: `Não é trabalho de 8 horas. É <strong>meia hora por dia</strong>. Menos que o tempo que você gasta rolando Instagram. Só que ao invés de perder tempo, você <strong>ganha dinheiro</strong>.`,
                 key: 'q6',
                 options: [
-                    { label: 'SIM, estou 100% decidido! 💪', value: 'sim', emoji: '✅' },
-                    { label: 'Talvez...', value: 'talvez', emoji: '🤔' },
-                    { label: 'Não (prefiro continuar reclamando)', value: 'nao', negative: true, emoji: '❌' }
+                    { label: '30 minutos? Consigo fácil! 💪', value: 'sim', emoji: '✅' },
+                    { label: 'Talvez, não sei...', value: 'talvez', emoji: '🤔' },
+                    { label: 'Não tenho tempo pra nada', value: 'nao', negative: true, emoji: '❌' }
                 ],
-                socialProof: '<strong>94%</strong> responderam SIM e já estão na operação'
+                socialProof: '<strong>94%</strong> falaram que conseguem — e já tão operando'
             });
         }
     },
@@ -306,16 +411,16 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 7, totalQ: 9, stepIcon: '🎯',
-                questionText: 'Você quer MESMO fazer cadastros em casas de aposta legalizadas e começar a lucrar?',
-                subText: `Todas as casas são <strong>100% legalizadas no Brasil</strong>. Você não precisa apostar. Você <strong>LUCRA com indicações</strong>.`,
+                questionText: 'Você topa se cadastrar em casas de aposta legalizadas pra começar a lucrar?',
+                subText: `Todas são <strong>regulamentadas pelo governo</strong>. Você <strong>não precisa apostar</strong>. Você lucra com cada pessoa que indica. É comissão, não aposta.`,
                 callout: {
                     icon: '🏛️',
-                    text: '<strong>Regulamentado pelo governo federal.</strong> Mais de 40 mil pessoas já estão operando. Sem risco, sem investimento.'
+                    text: 'Mercado <strong>100% legalizado</strong>. Mais de 40 mil pessoas já fazem isso. Sem risco, sem investimento, sem pegadinha.'
                 },
                 key: 'q7',
                 options: [
-                    { label: 'SIM, quero começar a lucrar! 🎯', value: 'sim', emoji: '✅' },
-                    { label: 'Não gosto desse mercado, estou fora', value: 'nao', negative: true, emoji: '❌' }
+                    { label: 'Topo sim, quero lucrar! 🎯', value: 'sim', emoji: '✅' },
+                    { label: 'Não curto esse mercado, valeu', value: 'nao', negative: true, emoji: '❌' }
                 ]
             });
         }
@@ -326,36 +431,36 @@ const steps = [
         render(el) {
             renderQuestion(el, {
                 stepNum: 8, totalQ: 9, stepIcon: '📱',
-                questionText: 'Para começar, você vai entrar no nosso grupo EXCLUSIVO no Telegram.',
-                subText: `Lá dentro você vai receber <strong>o passo a passo completo</strong>, suporte em tempo real e o direcionamento para fazer seu primeiro dinheiro <strong>HOJE</strong>.`,
+                questionText: 'Pra começar, você precisa entrar no nosso grupo no WhatsApp. Topa?',
+                subText: `É lá que rola tudo: <strong>passo a passo</strong>, suporte ao vivo, e o direcionamento pra você fazer seu primeiro dinheiro <strong>ainda hoje</strong>.`,
                 callout: {
                     icon: '🔒',
-                    text: 'O grupo é <strong>PRIVADO</strong> e só aceita quem passa pela qualificação. Uma vez fechado, <strong>não reabre</strong>.'
+                    text: 'O grupo é <strong>fechado</strong>. Só entra quem passa pela qualificação. Quando lotou, <strong>a gente fecha e não abre mais</strong>.'
                 },
                 key: 'q8',
                 options: [
-                    { label: 'SIM, quero entrar no grupo AGORA! 🚀', value: 'sim', emoji: '✅' },
-                    { label: 'Vou deixar para depois (arriscar perder a vaga)', value: 'depois', negative: true, emoji: '⏳' }
+                    { label: 'Quero entrar no grupo AGORA! 🚀', value: 'sim', emoji: '✅' },
+                    { label: 'Deixa pra depois... (se ainda tiver vaga)', value: 'depois', negative: true, emoji: '⏳' }
                 ]
             });
         }
     },
 
-    // ===== STEP 11: QUESTION 9 (LAST) =====
+    // ===== STEP 11: QUESTION 9 (ÚLTIMA) =====
     {
         render(el) {
             renderQuestion(el, {
                 stepNum: 9, totalQ: 9, stepIcon: '🏆',
-                questionText: 'ÚLTIMA PERGUNTA: Faz sentido entrar no grupo do Telegram AGORA e iniciar o passo a passo?',
-                subText: `Depois de clicar, um <strong>especialista</strong> vai te direcionar pessoalmente. Sem enrolação, sem espera longa. <strong>O dinheiro não espera.</strong>`,
+                questionText: 'Última: Faz sentido entrar no grupo agora e seguir o passo a passo?',
+                subText: `Quando você clicar, alguém da equipe vai te receber pessoalmente. Sem robô, sem demora. <strong>O dinheiro não espera quem fica em cima do muro.</strong>`,
                 callout: {
                     icon: '⚡',
-                    text: '<strong>AVISO FINAL:</strong> Após essa pergunta, seu perfil será analisado. Se sua vaga expirar, <strong>você NÃO poderá refazer o quiz</strong>.'
+                    text: '<strong>Último aviso:</strong> Depois dessa pergunta a gente analisa seu perfil. Se demorar demais, <strong>a vaga vai pra próxima pessoa da fila</strong>.'
                 },
                 key: 'q9',
                 options: [
-                    { label: 'SIM, quero falar com o especialista! 🏆', value: 'sim', emoji: '✅' },
-                    { label: 'Prefiro depois (e perder a oportunidade)', value: 'depois', negative: true, emoji: '❌' }
+                    { label: 'SIM, me coloca no grupo! 🏆', value: 'sim', emoji: '✅' },
+                    { label: 'Vou pensar... (e perder a vez)', value: 'depois', negative: true, emoji: '❌' }
                 ]
             });
         }
@@ -367,30 +472,29 @@ const steps = [
             el.innerHTML = `
                 <div class="loading-screen">
                     <div class="loading-spinner"></div>
-                    <h2 class="loading-title">Analisando seu perfil...</h2>
-                    <p class="loading-subtitle">Aguarde enquanto verificamos sua qualificação</p>
+                    <h2 class="loading-title">Analisando suas respostas...</h2>
+                    <p class="loading-subtitle">Espera só um segundo</p>
                     <div class="loading-steps">
                         <div class="loading-step" id="ls1">
                             <span class="step-check">⏳</span>
-                            <span>Verificando respostas...</span>
+                            <span>Conferindo respostas...</span>
                         </div>
                         <div class="loading-step" id="ls2">
                             <span class="step-check">⏳</span>
-                            <span>Calculando potencial de ganhos...</span>
+                            <span>Calculando seu potencial...</span>
                         </div>
                         <div class="loading-step" id="ls3">
                             <span class="step-check">⏳</span>
-                            <span>Reservando sua vaga exclusiva...</span>
+                            <span>Separando sua vaga...</span>
                         </div>
                         <div class="loading-step" id="ls4">
                             <span class="step-check">⏳</span>
-                            <span>Conectando com especialista...</span>
+                            <span>Preparando acesso ao grupo...</span>
                         </div>
                     </div>
                 </div>
             `;
 
-            // Animate steps
             const timings = [600, 1500, 2500, 3500];
             const ids = ['ls1', 'ls2', 'ls3', 'ls4'];
 
@@ -401,7 +505,6 @@ const steps = [
                         step.classList.add('active');
                         step.querySelector('.step-check').textContent = '⏳';
                     }
-                    // Mark previous as done
                     if (i > 0) {
                         const prev = document.getElementById(ids[i - 1]);
                         if (prev) {
@@ -412,7 +515,6 @@ const steps = [
                 }, timings[i]);
             });
 
-            // Go to result
             setTimeout(() => {
                 const last = document.getElementById(ids[ids.length - 1]);
                 if (last) {
@@ -427,14 +529,13 @@ const steps = [
     // ===== STEP 13: RESULT PAGE =====
     {
         render(el) {
-            // Determine pain point label
             const painLabels = {
-                'desempregado': 'Desempregado(a) — Urgência Máxima',
-                'contas_atrasadas': 'Contas Atrasadas — Situação Crítica',
-                'renda_extra': 'Precisa de Renda Extra — Alta Prioridade',
-                'todas': 'Situação Crítica Total — Prioridade MÁXIMA'
+                'desempregado': 'Desempregado(a) — Precisa urgente',
+                'contas_atrasadas': 'Contas no vermelho — Situação crítica',
+                'renda_extra': 'Precisando de grana extra — Prioridade',
+                'todas': 'Tudo junto — Prioridade MÁXIMA'
             };
-            const painLabel = painLabels[userData.q4] || 'Alta Prioridade';
+            const painLabel = painLabels[userData.q4] || 'Prioridade Alta';
 
             el.innerHTML = `
                 <div class="result-page">
@@ -442,10 +543,10 @@ const steps = [
                     <!-- HEADER -->
                     <div class="result-header">
                         <div class="result-badge">✅ PERFIL APROVADO</div>
-                        <h1 class="result-title">Parabéns! Você foi QUALIFICADO para a operação.</h1>
+                        <h1 class="result-title">Deu bom. Você passou na qualificação.</h1>
                         <p class="result-subtitle">
-                            Com base nas suas respostas, identificamos que você tem <strong>potencial imediato de ganhos</strong>. 
-                            Sua vaga está <strong>reservada por tempo limitado</strong>.
+                            Pelas suas respostas, você tem <strong>perfil pra começar a faturar hoje</strong>. 
+                            Sua vaga tá <strong>reservada, mas por pouco tempo</strong>.
                         </p>
                     </div>
 
@@ -453,10 +554,10 @@ const steps = [
                     <div class="profile-card">
                         <div class="profile-card-header">
                             <span class="icon">📊</span>
-                            Seu Perfil de Ganhos
+                            Seu Perfil
                         </div>
                         <div class="profile-stat">
-                            <span class="profile-stat-label">Situação Atual</span>
+                            <span class="profile-stat-label">Situação</span>
                             <span class="profile-stat-value urgent">${painLabel}</span>
                         </div>
                         <div class="profile-stat">
@@ -464,7 +565,7 @@ const steps = [
                             <span class="profile-stat-value urgent">🔴 MÁXIMO</span>
                         </div>
                         <div class="profile-stat">
-                            <span class="profile-stat-label">Perfil de Ação</span>
+                            <span class="profile-stat-label">Disposição</span>
                             <span class="profile-stat-value">${userData.q6 === 'sim' ? '✅ Decidido' : '⚠️ Indeciso'}</span>
                         </div>
                         <div class="profile-stat">
@@ -475,9 +576,9 @@ const steps = [
 
                     <!-- EARNINGS PROJECTION -->
                     <div class="earnings-card">
-                        <div class="earnings-label">Projeção de Ganhos Diários</div>
+                        <div class="earnings-label">Quanto você pode tirar por dia</div>
                         <div class="earnings-value">R$ 100+</div>
-                        <div class="earnings-period">por dia, começando HOJE</div>
+                        <div class="earnings-period">por dia, começando hoje</div>
                         <div class="earnings-breakdown">
                             <div class="earnings-item">
                                 <div class="earnings-item-value">R$50</div>
@@ -492,33 +593,33 @@ const steps = [
 
                     <!-- HOW IT WORKS -->
                     <div class="how-it-works">
-                        <h3 class="how-title">🎯 Como Funciona (3 Passos Simples)</h3>
+                        <h3 class="how-title">🎯 É simples. 3 passos.</h3>
                         <div class="how-step">
                             <div class="how-step-num">1</div>
                             <div class="how-step-content">
-                                <h4>Entre no Grupo do Telegram</h4>
-                                <p>Receba o passo a passo completo e suporte em tempo real</p>
+                                <h4>Entra no grupo do WhatsApp</h4>
+                                <p>Lá tem o passo a passo e a galera te ajuda ao vivo</p>
                             </div>
                         </div>
                         <div class="how-step">
                             <div class="how-step-num">2</div>
                             <div class="how-step-content">
-                                <h4>Faça os Cadastros</h4>
-                                <p>Siga as instruções simples e comece a ganhar comissões</p>
+                                <h4>Faz os cadastros</h4>
+                                <p>Segue as instruções, demora uns 5 minutos cada</p>
                             </div>
                         </div>
                         <div class="how-step">
                             <div class="how-step-num">3</div>
                             <div class="how-step-content">
-                                <h4>Indique e Multiplique</h4>
-                                <p>Convide mais pessoas e multiplique seus ganhos diariamente</p>
+                                <h4>Indica e multiplica</h4>
+                                <p>Chama mais gente e sua comissão só cresce</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- TESTIMONIALS -->
                     <div class="testimonials-section">
-                        <div class="testimonials-title">💬 Quem já começou fala:</div>
+                        <div class="testimonials-title">💬 Gente que já tá fazendo:</div>
                         
                         <div class="testimonial-card">
                             <div class="testimonial-header">
@@ -528,8 +629,8 @@ const steps = [
                                     <div class="testimonial-verified">✅ Verificado</div>
                                 </div>
                             </div>
-                            <p class="testimonial-text">"Comecei ontem e já fiz R$47 só com os cadastros. Hoje indiquei 3 amigos e fiz mais R$150. Isso é real!"</p>
-                            <span class="testimonial-earning">💰 Faturou R$ 197 em 2 dias</span>
+                            <p class="testimonial-text">"Entrei no grupo tipo meia-noite, fiz os cadastro no outro dia de manhã e já tinha R$47 na conta. Indiquei uns 3 amigos meu e fiz mais R$150. Paguei a conta de água que tava atrasada kkk"</p>
+                            <span class="testimonial-earning">💰 R$ 197 em 2 dias</span>
                         </div>
 
                         <div class="testimonial-card">
@@ -540,8 +641,8 @@ const steps = [
                                     <div class="testimonial-verified">✅ Verificado</div>
                                 </div>
                             </div>
-                            <p class="testimonial-text">"Estava desempregada há 6 meses. Em 1 semana já fiz mais de R$800 só com o celular. Mudou minha vida."</p>
-                            <span class="testimonial-earning">💰 Faturou R$ 800+ na 1ª semana</span>
+                            <p class="testimonial-text">"6 meses desempregada, já tava sem esperança nenhuma. Minha vizinha me mandou esse link, entrei no grupo e em 1 semana tirei mais de R$800. Nem acredito ainda."</p>
+                            <span class="testimonial-earning">💰 R$ 800+ na 1ª semana</span>
                         </div>
 
                         <div class="testimonial-card">
@@ -552,41 +653,41 @@ const steps = [
                                     <div class="testimonial-verified">✅ Verificado</div>
                                 </div>
                             </div>
-                            <p class="testimonial-text">"Achei que era mentira. Entrei no grupo, segui o passo a passo e em 3 horas já tinha R$35 na conta. Simples demais."</p>
+                            <p class="testimonial-text">"Confesso que achei que era golpe kkkk mas entrei de curioso, fiz o passo a passo e em 3 horas já tinha caído R$35. Comprei o almoço com o dinheiro do mesmo dia."</p>
                             <span class="testimonial-earning">💰 R$ 35 em 3 horas</span>
                         </div>
                     </div>
 
                     <!-- URGENCY CARD -->
                     <div class="urgency-card">
-                        <div class="urgency-card-title">⚠️ ATENÇÃO: SUA VAGA EXPIRA EM</div>
+                        <div class="urgency-card-title">⚠️ SUA VAGA EXPIRA EM</div>
                         <div class="urgency-timer" id="countdown-timer">
                             <span>⏰</span>
                             <span id="timer-display">14:59</span>
                         </div>
                         <p class="urgency-card-text">
-                            Após esse tempo, sua qualificação será <strong>cancelada</strong> e a vaga será liberada para outra pessoa da fila.
+                            Se o tempo acabar, <strong>sua qualificação cai</strong> e a vaga vai pra próxima pessoa da fila. Não tem como refazer.
                         </p>
                     </div>
 
                     <!-- GUARANTEE -->
                     <div class="guarantee-section">
                         <div class="guarantee-icon">🛡️</div>
-                        <div class="guarantee-title">100% GRATUITO — SEM RISCO</div>
+                        <div class="guarantee-title">GRATUITO — ZERO RISCO</div>
                         <p class="guarantee-text">
-                            Você não paga NADA para entrar. Não precisa investir NADA para começar. 
-                            Apenas siga as instruções do grupo e comece a ganhar.
+                            Você não paga nada pra entrar. Não precisa investir nada pra começar. 
+                            Só entra no grupo, segue o passo a passo e pronto. Simples assim.
                         </p>
                     </div>
 
                     <!-- CTA -->
                     <div class="cta-container">
-                        <a href="${TELEGRAM_LINK}" target="_blank" rel="noopener noreferrer" class="btn-cta" id="main-cta">
+                        <a href="${WHATSAPP_LINK}" target="_blank" rel="noopener noreferrer" class="btn-cta" id="main-cta">
                             <span>📱</span>
-                            ENTRAR NO GRUPO DO TELEGRAM
+                            ENTRAR NO GRUPO DO WHATSAPP
                         </a>
                         <p class="btn-cta-sub">
-                            🔒 Acesso imediato • <strong>Vagas limitadas</strong> • 100% Gratuito
+                            🔒 Acesso imediato • <strong>Poucas vagas</strong> • 100% Gratuito
                         </p>
                     </div>
 
@@ -605,7 +706,6 @@ const steps = [
                 </div>
             `;
 
-            // Start countdown timer
             startCountdown();
         }
     }
@@ -613,7 +713,7 @@ const steps = [
 
 // ===== COUNTDOWN TIMER =====
 function startCountdown() {
-    let timeLeft = 15 * 60; // 15 minutes
+    let timeLeft = 15 * 60;
     const display = document.getElementById('timer-display');
 
     const interval = setInterval(() => {
